@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Performance - Logística</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .zoom-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 50px;
+            padding: 10px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 9999;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .zoom-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .zoom-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .zoom-level {
+            font-size: 14px;
+            font-weight: 700;
+            color: #2c5282;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%);
+            color: white;
+            padding: 30px 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            animation: headerShine 8s ease-in-out infinite;
+        }
+
+        @keyframes headerShine {
+            0%, 100% {
+                left: -100%;
+            }
+            50% {
+                left: 100%;
+            }
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h1::before {
+            content: '📊';
+            font-size: 40px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        /* SEÇÃO DE RESUMO NO TOPO */
+        .summary-section {
+            margin-bottom: 40px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(44, 82, 130, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 50%);
+            opacity: 0.6;
+        }
+
+        .summary-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .summary-card.green {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card.green::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 50%);
+            opacity: 0.6;
+        }
+
+        .summary-card.red {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card.red::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 50%);
+            opacity: 0.6;
+        }
+
+        .summary-card-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .summary-card-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .summary-card-value {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .summary-card-subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            font-weight: 500;
+        }
+
+        /* TABELAS DE DADOS */
+        .data-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .table-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            position: relative;
+        }
+
+        .table-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: tableShine 6s ease-in-out infinite;
+        }
+
+        @keyframes tableShine {
+            0%, 100% {
+                left: -100%;
+            }
+            50% {
+                left: 150%;
+            }
+        }
+
+        .table-header {
+            padding: 18px 25px;
+            font-weight: 700;
+            font-size: 13px;
+            color: white;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-header::before {
+            font-size: 24px;
+        }
+
+        .table-header.diario {
+            background: linear-gradient(135deg, #c92a2a 0%, #a61e1e 100%);
+        }
+
+        .table-header.diario::before {
+            content: '🔥';
+        }
+
+        .table-header.mensal {
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
+        }
+
+        .table-header.mensal::before {
+            content: '☑️';
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        td {
+            padding: 18px 25px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 14px;
+        }
+
+        td:first-child {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        td:last-child {
+            text-align: right;
+            font-weight: 700;
+            color: #2c5282;
+            font-size: 15px;
+        }
+
+        .percentual-col {
+            text-align: center !important;
+            font-weight: 800 !important;
+            color: #e67e22 !important;
+            font-size: 14px !important;
+            background: rgba(230, 126, 34, 0.1);
+            width: 80px;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
+            color: white !important;
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        .total-row td {
+            border: none;
+            padding: 20px 25px;
+            color: white !important;
+        }
+
+        /* ANÁLISE POR CATEGORIA */
+        .category-section {
+            margin-top: 40px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c5282;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #2c5282;
+        }
+
+        .section-title::before {
+            content: '📋';
+            font-size: 32px;
+        }
+
+        .category-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .category-card {
+            border-radius: 16px;
+            padding: 40px 30px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .category-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 30%, transparent 60%);
+            opacity: 0.5;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(-10%, -10%) scale(1.1);
+            }
+        }
+
+        .category-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .category-card:hover::after {
+            left: 100%;
+        }
+
+        .category-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.35);
+        }
+
+        /* CARDS COM GRADIENTES DIFERENTES */
+        .category-card.gray-gradient {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 50%, #6c7a7b 100%);
+            box-shadow: 0 10px 30px rgba(149, 165, 166, 0.35);
+        }
+
+        .category-card.red-gradient {
+            background: linear-gradient(135deg, #dc3545 0%, #c92a2a 50%, #a61e1e 100%);
+            box-shadow: 0 10px 30px rgba(220, 53, 69, 0.35);
+        }
+
+        .category-card.blue-gradient {
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 50%, #162d47 100%);
+            box-shadow: 0 10px 30px rgba(44, 82, 130, 0.35);
+        }
+
+        .category-card.silver-gradient {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 50%, #6c7a7b 100%);
+            box-shadow: 0 10px 30px rgba(149, 165, 166, 0.35);
+        }
+
+        /* Animação de alerta para cards vermelhos (estouro de orçamento) */
+        .category-card.red-gradient.alert-blink {
+            animation: alertPulse 3s ease-in-out;
+        }
+
+        @keyframes alertPulse {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(220, 53, 69, 0.35);
+                transform: scale(1);
+            }
+            25% {
+                box-shadow: 0 15px 50px rgba(220, 53, 69, 0.7);
+                transform: scale(1.03);
+            }
+            50% {
+                box-shadow: 0 20px 60px rgba(220, 53, 69, 0.9);
+                transform: scale(1.05);
+            }
+            75% {
+                box-shadow: 0 15px 50px rgba(220, 53, 69, 0.7);
+                transform: scale(1.03);
+            }
+        }
+
+        /* Remover a regra que forçava Serviços a ser vermelho */
+
+        .category-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .category-icon-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.5), transparent, rgba(255,255,255,0.5));
+            animation: rotate 4s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .category-icon {
+            width: 45px;
+            height: 45px;
+            fill: white;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .category-name {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            opacity: 0.85;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-value {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-budget-percent {
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #ffd93d;
+            background: rgba(0,0,0,0.25);
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-realized-percent {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+            background: rgba(0,0,0,0.25);
+            padding: 10px 15px;
+            border-radius: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            letter-spacing: 0.5px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-percentage {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid rgba(255,255,255,0.25);
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-percentage div {
+            margin-bottom: 8px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .category-details {
+            font-size: 14px;
+            line-height: 1.9;
+            font-weight: 500;
+            position: relative;
+            z-index: 2;
+        }
+
+        .category-details div {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-details strong {
+            font-weight: 700;
+        }
+
+        /* PAINEL DE EDIÇÃO */
+        .edit-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
+            color: white;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(44, 82, 130, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .edit-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .capture-btn {
+            position: fixed;
+            bottom: 120px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(39, 174, 96, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .capture-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #229954 0%, #1e8449 100%);
+        }
+
+        .capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .test-blink-btn {
+            position: fixed;
+            bottom: 210px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(243, 156, 18, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .test-blink-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+
+        .test-blink-btn:active {
+            transform: scale(0.95);
+        }
+
+        .share-btn {
+            position: fixed;
+            bottom: 300px;
+            right: 30px;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(52, 152, 219, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+        }
+
+        .share-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal de Compartilhar */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 20000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .share-modal.show {
+            display: flex;
+        }
+
+        .share-modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .share-modal-content h2 {
+            color: #2c5282;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .share-link-box {
+            background: #f8f9fa;
+            border: 2px solid #2c5282;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            color: #2c5282;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .share-link-box:hover {
+            background: #e9ecef;
+        }
+
+        /* Links clicáveis para WhatsApp */
+        .clickable-link {
+            display: inline-block;
+            color: #0066cc !important;
+            text-decoration: underline !important;
+            font-weight: 600;
+            word-break: break-all;
+            cursor: pointer;
+            padding: 8px 12px;
+            background: #e3f2fd;
+            border-radius: 6px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            position: relative;
+            padding-left: 35px;
+        }
+
+        .clickable-link::before {
+            content: '📱';
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        .clickable-link:hover {
+            background: #bbdefb;
+            color: #004499 !important;
+        }
+
+        .clickable-link:active {
+            background: #90caf9;
+        }
+
+        /* Estilo para área de links */
+        .links-section {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border: 3px solid #2196f3;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.3);
+        }
+
+        .links-section h3 {
+            color: #1976d2;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+        }
+
+        .link-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .link-item label {
+            display: block;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .share-buttons button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-copy {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+
+        .btn-close-modal {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-close-modal:hover {
+            background: #5a6268;
+        }
+
+        /* Loading animation */
+        .capturing {
+            animation: captureFlash 0.5s ease-in-out;
+        }
+
+        @keyframes captureFlash {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #fff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 10000;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .status-indicator.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .status-indicator.success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .status-indicator.error {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .edit-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 10000;
+            max-width: 900px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .edit-panel h2 {
+            color: #2c5282;
+            margin-bottom: 30px;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .edit-panel h2::before {
+            content: '⚙️';
+            font-size: 32px;
+        }
+
+        .edit-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .edit-group {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+        }
+
+        .edit-group-datetime {
+            background: #e3f2fd;
+            border-left: 4px solid #2c5282;
+            grid-column: 1 / -1;
+        }
+
+        .edit-group-mensal {
+            background: #e3f2fd;
+            border-left: 4px solid #2c5282;
+        }
+
+        .edit-group h3 {
+            color: #2c5282;
+            margin-bottom: 20px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .input-field {
+            margin-bottom: 15px;
+        }
+
+        .input-field label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: #2c5282;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2c5282 0%, #1e3a5f 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 82, 130, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        @media print {
+            .zoom-controls,
+            .edit-btn,
+            .capture-btn,
+            .test-blink-btn,
+            .share-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Zoom Controls -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomOut()" title="Reduzir Zoom (Ctrl/Cmd + -)">-</button>
+        <span class="zoom-level" id="zoomLevel">100%</span>
+        <button class="zoom-btn" onclick="zoomIn()" title="Aumentar Zoom (Ctrl/Cmd + +)">+</button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p style="color: white; font-weight: 600; margin: 0;">Carregando dados...</p>
+        </div>
+    </div>
+
+    <!-- Status Indicator -->
+    <div class="status-indicator" id="statusIndicator"></div>
+
+    <div class="container" id="mainContainer">
+        <!-- Header -->
+        <div class="header">
+            <h1>RELATÓRIO DE PERFORMANCE MENSAL - MANUTENÇÃO</h1>
+            <div class="subtitle" id="dataHoraAtual">REALIZADO ATÉ - DIGITE A DATA E HORA MANUALMENTE</div>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Resumo no Topo -->
+            <div class="summary-section">
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <span class="summary-card-icon">📊</span>
+                        <div class="summary-card-label">Orçamento Mensal</div>
+                        <div class="summary-card-value" id="orcamento_mensal_display">R$ 32.553.959,00</div>
+                        <div class="summary-card-subtitle">META DO MÊS</div>
+                    </div>
+
+                    <div class="summary-card">
+                        <span class="summary-card-icon">💰</span>
+                        <div class="summary-card-label">Total Realizado</div>
+                        <div class="summary-card-value" id="total_realizado_display">R$ 23.697.950,00</div>
+                        <div class="summary-card-subtitle" id="percentual_realizado">72.8% DO ORÇAMENTO</div>
+                    </div>
+
+                    <div class="summary-card green" id="saldo_card">
+                        <span class="summary-card-icon">📈</span>
+                        <div class="summary-card-label">Saldo</div>
+                        <div class="summary-card-value" id="saldo_display">R$ 8.856.009,00</div>
+                        <div class="summary-card-subtitle" id="saldo_percentual">27.2% DO ORÇAMENTO</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabelas de Dados -->
+            <div class="data-section">
+                <!-- Realizado Diário -->
+                <div class="table-box">
+                    <div class="table-header diario">REALIZADO DIÁRIO</div>
+                    <table>
+                        <tr>
+                            <td>Commodities</td>
+                            <td id="daily_commodities_display">R$ 115.443,20</td>
+                        </tr>
+                        <tr>
+                            <td>Florestal</td>
+                            <td id="daily_florestal_display">R$ 0,00</td>
+                        </tr>
+                        <tr>
+                            <td>Fretamento</td>
+                            <td id="daily_fretamento_display">R$ 2.381,43</td>
+                        </tr>
+                        <tr>
+                            <td>Integrada</td>
+                            <td id="daily_integrada_display">R$ 84.424,16</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAL DIÁRIO</td>
+                            <td id="daily_total_display">R$ 202.248,79</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- Realizado Mensal -->
+                <div class="table-box">
+                    <div class="table-header mensal">REALIZADO MENSAL</div>
+                    <table>
+                        <tr>
+                            <td>Commodities</td>
+                            <td id="monthly_commodities_display">R$ 17.143.197,00</td>
+                            <td class="percentual-col" id="monthly_commodities_perc">52.7%</td>
+                        </tr>
+                        <tr>
+                            <td>Florestal</td>
+                            <td id="monthly_florestal_display">R$ 0,00</td>
+                            <td class="percentual-col" id="monthly_florestal_perc">0.0%</td>
+                        </tr>
+                        <tr>
+                            <td>Fretamento</td>
+                            <td id="monthly_fretamento_display">R$ 193.537,00</td>
+                            <td class="percentual-col" id="monthly_fretamento_perc">0.6%</td>
+                        </tr>
+                        <tr>
+                            <td>Integrada</td>
+                            <td id="monthly_integrada_display">R$ 6.361.217,00</td>
+                            <td class="percentual-col" id="monthly_integrada_perc">19.5%</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td>TOTAL MENSAL</td>
+                            <td id="monthly_total_display">R$ 23.697.951,00</td>
+                            <td class="percentual-col" id="monthly_total_perc">72.8%</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Análise por Categoria -->
+            <div class="category-section">
+                <div class="section-title">ANÁLISE POR CATEGORIA</div>
+                <div class="category-cards">
+                    <!-- Peças - AGORA COM GRADIENTE AZUL -->
+                    <div class="category-card gray-gradient" id="saldo_pecas_card">
+                        <div class="category-icon-wrapper">
+                            <svg class="category-icon" viewBox="0 0 512 512" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M352 320c88.4 0 160-71.6 160-160c0-15.3-2.2-30.1-6.2-44.2c-3.1-10.8-16.4-13.2-24.3-5.3l-76.8 76.8c-3 3-7.1 4.7-11.3 4.7H336c-8.8 0-16-7.2-16-16V118.6c0-4.2 1.7-8.3 4.7-11.3l76.8-76.8c7.9-7.9 5.4-21.2-5.3-24.3C382.1 2.2 367.3 0 352 0C263.6 0 192 71.6 192 160c0 19.1 3.4 37.5 9.5 54.5L19.9 396.1C7.2 408.8 0 426.1 0 444.1C0 481.6 30.4 512 67.9 512c18 0 35.3-7.2 48-19.9L297.5 310.5c17 6.2 35.4 9.5 54.5 9.5zM80 456c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/>
+                            </svg>
+                        </div>
+                        <div class="category-name">PEÇAS</div>
+                        <div class="category-label">Saldo Disponível</div>
+                        <div class="category-value" id="saldo_pecas_display">R$ 2.444.546,00</div>
+                        <div class="category-budget-percent" id="pecas_budget_percent">39.7% do Orçamento Mensal</div>
+                        <div class="category-realized-percent" id="pecas_realized_percent">54.5% do Total Realizado</div>
+                        <div class="category-percentage">
+                            <div id="realizado_pecas_percentual">Realizado: 84.1%</div>
+                            <div id="saldo_pecas_percentual">Saldo: 15.9%</div>
+                        </div>
+                        <div class="category-details">
+                            <div><span>Orçamento:</span> <strong id="orcamento_pecas_display">R$ 15.353.983,00</strong></div>
+                            <div><span>Realizado:</span> <strong id="pecas_realizado_display">R$ 12.909.437,00</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Pneus -->
+                    <div class="category-card gray-gradient" id="saldo_pneus_card">
+                        <div class="category-icon-wrapper">
+                            <svg class="category-icon" viewBox="0 0 512 512" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 480c-123.5 0-224-100.5-224-224S132.5 32 256 32s224 100.5 224 224S379.5 480 256 480z"/>
+                                <path d="M256 64C149.1 64 64 149.1 64 256s85.1 192 192 192s192-85.1 192-192S362.9 64 256 64zM256 416c-88.2 0-160-71.8-160-160S167.8 96 256 96s160 71.8 160 160S344.2 416 256 416z"/>
+                                <path d="M256 128c-70.7 0-128 57.3-128 128s57.3 128 128 128s128-57.3 128-128S326.7 128 256 128zM256 352c-52.9 0-96-43.1-96-96s43.1-96 96-96s96 43.1 96 96S308.9 352 256 352z"/>
+                                <circle cx="256" cy="256" r="64"/>
+                                <circle cx="256" cy="160" r="16" opacity="0.6"/>
+                                <circle cx="352" cy="256" r="16" opacity="0.6"/>
+                                <circle cx="256" cy="352" r="16" opacity="0.6"/>
+                                <circle cx="160" cy="256" r="16" opacity="0.6"/>
+                            </svg>
+                        </div>
+                        <div class="category-name">PNEUS</div>
+                        <div class="category-label">Saldo Disponível</div>
+                        <div class="category-value" id="saldo_pneus_display">R$ 2.713.630,00</div>
+                        <div class="category-budget-percent" id="pneus_budget_percent">19.9% do Orçamento Mensal</div>
+                        <div class="category-realized-percent" id="pneus_realized_percent">27.4% do Total Realizado</div>
+                        <div class="category-percentage">
+                            <div id="realizado_pneus_percentual">Realizado: 70.5%</div>
+                            <div id="saldo_pneus_percentual">Saldo: 29.5%</div>
+                        </div>
+                        <div class="category-details">
+                            <div><span>Orçamento:</span> <strong id="orcamento_pneus_display">R$ 9.202.912,00</strong></div>
+                            <div><span>Realizado:</span> <strong id="pneus_realizado_display">R$ 6.489.282,00</strong></div>
+                        </div>
+                    </div>
+
+                    <!-- Serviços -->
+                    <div class="category-card gray-gradient" id="saldo_servicos_card">
+                        <div class="category-icon-wrapper">
+                            <svg class="category-icon" viewBox="0 0 512 512" fill="white" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M495.9 166.6c3.2 8.7 .5 18.4-6.4 24.6l-43.3 39.4c1.1 8.3 1.7 16.8 1.7 25.4s-.6 17.1-1.7 25.4l43.3 39.4c6.9 6.2 9.6 15.9 6.4 24.6c-4.4 11.9-9.7 23.3-15.8 34.3l-4.7 8.1c-6.6 11-14 21.4-22.1 31.2c-5.9 7.2-15.7 9.6-24.5 6.8l-55.7-17.7c-13.4 10.3-28.2 18.9-44 25.4l-12.5 57.1c-2 9.1-9 16.3-18.2 17.8c-13.8 2.3-28 3.5-42.5 3.5s-28.7-1.2-42.5-3.5c-9.2-1.5-16.2-8.7-18.2-17.8l-12.5-57.1c-15.8-6.5-30.6-15.1-44-25.4L83.1 425.9c-8.8 2.8-18.6 .3-24.5-6.8c-8.1-9.8-15.5-20.2-22.1-31.2l-4.7-8.1c-6.1-11-11.4-22.4-15.8-34.3c-3.2-8.7-.5-18.4 6.4-24.6l43.3-39.4C64.6 273.1 64 264.6 64 256s.6-17.1 1.7-25.4L22.4 191.2c-6.9-6.2-9.6-15.9-6.4-24.6c4.4-11.9 9.7-23.3 15.8-34.3l4.7-8.1c6.6-11 14-21.4 22.1-31.2c5.9-7.2 15.7-9.6 24.5-6.8l55.7 17.7c13.4-10.3 28.2-18.9 44-25.4l12.5-57.1c2-9.1 9-16.3 18.2-17.8C227.3 1.2 241.5 0 256 0s28.7 1.2 42.5 3.5c9.2 1.5 16.2 8.7 18.2 17.8l12.5 57.1c15.8 6.5 30.6 15.1 44 25.4l55.7-17.7c8.8-2.8 18.6-.3 24.5 6.8c8.1 9.8 15.5 20.2 22.1 31.2l4.7 8.1c6.1 11 11.4 22.4 15.8 34.3zM256 336a80 80 0 1 0 0-160 80 80 0 1 0 0 160z"/>
+                            </svg>
+                        </div>
+                        <div class="category-name">SERVIÇOS</div>
+                        <div class="category-label">Saldo Disponível</div>
+                        <div class="category-value" id="saldo_servicos_display">R$ 1.814.892,00</div>
+                        <div class="category-budget-percent" id="servicos_budget_percent">17.9% do Orçamento Mensal</div>
+                        <div class="category-realized-percent" id="servicos_realized_percent">24.6% do Total Realizado</div>
+                        <div class="category-percentage">
+                            <div id="realizado_servicos_percentual">Realizado: 76.3%</div>
+                            <div id="saldo_servicos_percentual">Saldo: 23.7%</div>
+                        </div>
+                        <div class="category-details">
+                            <div><span>Orçamento:</span> <strong id="orcamento_servicos_display">R$ 7.647.125,00</strong></div>
+                            <div><span>Realizado:</span> <strong id="servicos_realizado_display">R$ 5.832.233,00</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão de Compartilhar (Azul) -->
+    <button class="share-btn" onclick="abrirModalCompartilhar()" title="Compartilhar Link Visualização">🔗</button>
+
+    <!-- Botão de Teste de Piscar (Laranja) -->
+    <button class="test-blink-btn" onclick="verificarEPiscarCardsVermelhos()" title="Testar Efeito de Piscar nos Cards Vermelhos">⚡</button>
+
+    <!-- Botão de Captura -->
+    <button class="capture-btn" onclick="capturarRelatorio()" title="Capturar Relatório (JPG)">📸</button>
+
+    <!-- Botão de Edição -->
+    <button class="edit-btn" onclick="toggleEditPanel()" title="Editar Valores">⚙️</button>
+
+    <!-- Modal de Compartilhar -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <h2>🔗 Compartilhar Relatório</h2>
+            <p style="color: #666; margin-bottom: 15px;">
+                Copie o link abaixo e compartilhe com outras pessoas. 
+                Elas poderão <strong>visualizar o relatório em tempo real</strong>, mas não poderão editar.
+            </p>
+            <div class="share-link-box" id="shareLinkBox" onclick="copiarLink()">
+                Clique para copiar o link
+            </div>
+            <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+                ✅ Funciona em: <strong>PC, Android, iPhone e todos navegadores</strong><br>
+                🔄 Atualização automática a cada 30 segundos<br>
+                👀 Apenas visualização (não permite editar)
+            </p>
+            <div class="share-buttons">
+                <button class="btn-copy" onclick="copiarLink()">📋 Copiar Link</button>
+                <button class="btn-close-modal" onclick="fecharModalCompartilhar()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel de Edição -->
+    <div class="edit-panel" id="editPanel">
+        <h2>Configurações e Edição de Valores</h2>
+        
+        <!-- CONFIGURAÇÃO GOOGLE SHEETS -->
+        <div class="edit-group" style="grid-column: 1 / -1; background: #fff3cd; border-left: 4px solid #f39c12;">
+            <h3>🔗 INTEGRAÇÃO COM GOOGLE SHEETS</h3>
+            <div style="margin-bottom: 15px; font-size: 13px; color: #856404;">
+                <strong>📝 Como configurar:</strong>
+                <ol style="margin: 10px 0 10px 20px; line-height: 1.8;">
+                    <li>Abra o Google Sheets e crie uma planilha</li>
+                    <li>Vá em <strong>Extensões → Apps Script</strong></li>
+                    <li>Cole o código do Google Apps Script (veja documentação)</li>
+                    <li>Clique em <strong>Implantar → Nova implantação</strong></li>
+                    <li>Escolha "Aplicativo da Web" e permita acesso a "Qualquer pessoa"</li>
+                    <li>Copie a URL gerada e cole abaixo</li>
+                </ol>
+            </div>
+            <div class="input-field">
+                <label>🔗 URL do Google Apps Script</label>
+                <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/...">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="testarConexao()">🔌 Testar Conexão</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="publicarDados()">🚀 Publicar Dados</button>
+            </div>
+        </div>
+
+        <!-- LINKS CLICÁVEIS PARA WHATSAPP -->
+        <div class="links-section" style="grid-column: 1 / -1;">
+            <h3>🔗 Links Clicáveis</h3>
+            <p style="color: #1976d2; font-size: 14px; margin-bottom: 20px;">
+                Clique nos links abaixo para copiar. O ícone 📱 indica que funcionam perfeitamente em celular.
+            </p>
+            
+            <div class="link-item">
+                <label>Link do Relatório</label>
+                <a href="https://seu-dominio.com/relatorio" class="clickable-link" target="_blank" id="linkRelatorio">
+                    https://seu-dominio.com/relatorio
+                </a>
+            </div>
+
+            <div class="link-item">
+                <label>Google Sheets</label>
+                <a href="https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit" class="clickable-link" target="_blank" id="linkSheets">
+                    https://docs.google.com/spreadsheets/d/SEU_ID_AQUI/edit
+                </a>
+            </div>
+
+            <div class="link-item">
+                <label>Google Apps Script</label>
+                <a href="https://script.google.com/macros/s/SEU_ID_AQUI/exec" class="clickable-link" target="_blank" id="linkAppsScript">
+                    https://script.google.com/macros/s/SEU_ID_AQUI/exec
+                </a>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: white; border-radius: 8px; border-left: 4px solid #2196f3;">
+                <strong style="color: #1976d2;">💡 Como usar:</strong>
+                <p style="color: #666; font-size: 13px; margin-top: 8px; line-height: 1.6;">
+                    • <strong>Duplo clique</strong> no link para editar<br>
+                    • <strong>Clique simples</strong> para copiar<br>
+                    • Links salvos automaticamente
+                </p>
+            </div>
+        </div>
+
+        <div class="edit-grid">
+            <!-- Data e Hora Manual -->
+            <div class="edit-group edit-group-datetime">
+                <h3>📅 Data e Hora do Relatório</h3>
+                <div class="input-field">
+                    <label>Data e Hora (ex: 08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026)</label>
+                    <input type="text" id="data_hora_relatorio" placeholder="08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026">
+                </div>
+            </div>
+
+            <!-- Realizado Diário -->
+            <div class="edit-group">
+                <h3>📅 Realizado Diário</h3>
+                <div class="input-field">
+                    <label>Commodities (R$)</label>
+                    <input type="number" id="daily_commodities" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Florestal (R$)</label>
+                    <input type="number" id="daily_florestal" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Fretamento (R$)</label>
+                    <input type="number" id="daily_fretamento" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Integrada (R$)</label>
+                    <input type="number" id="daily_integrada" step="0.01">
+                </div>
+            </div>
+
+            <!-- Realizado Mensal -->
+            <div class="edit-group edit-group-mensal">
+                <h3>📊 Realizado Mensal</h3>
+                <div class="input-field">
+                    <label>Commodities (R$)</label>
+                    <input type="number" id="monthly_commodities" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Florestal (R$)</label>
+                    <input type="number" id="monthly_florestal" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Fretamento (R$)</label>
+                    <input type="number" id="monthly_fretamento" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Integrada (R$)</label>
+                    <input type="number" id="monthly_integrada" step="0.01">
+                </div>
+            </div>
+
+            <!-- Orçamento -->
+            <div class="edit-group">
+                <h3>💰 Orçamento</h3>
+                <div class="input-field">
+                    <label>Orçamento Mensal (R$)</label>
+                    <input type="number" id="orcamento_mensal" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Orçamento Peças (R$)</label>
+                    <input type="number" id="orcamento_pecas" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Orçamento Pneus (R$)</label>
+                    <input type="number" id="orcamento_pneus" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Orçamento Serviços (R$)</label>
+                    <input type="number" id="orcamento_servicos" step="0.01">
+                </div>
+            </div>
+
+            <!-- Realizado por Categoria -->
+            <div class="edit-group">
+                <h3>✅ Realizado por Categoria</h3>
+                <div class="input-field">
+                    <label>Peças Realizado (R$)</label>
+                    <input type="number" id="pecas_realizado" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Pneus Realizado (R$)</label>
+                    <input type="number" id="pneus_realizado" step="0.01">
+                </div>
+                <div class="input-field">
+                    <label>Serviços Realizado (R$)</label>
+                    <input type="number" id="servicos_realizado" step="0.01">
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-danger" onclick="limparDados()">🗑️ Limpar Dados</button>
+            <button class="btn btn-secondary" onclick="resetar()">↺ Resetar</button>
+            <button class="btn btn-secondary" onclick="toggleEditPanel()">Cancelar</button>
+            <button class="btn btn-primary" onclick="salvarEFechar()">💾 Salvar e Fechar</button>
+        </div>
+    </div>
+
+    <script>
+        let zoomLevel = 1;
+        let SHEETS_URL = '';
+
+        // Funções de UI
+        function mostrarLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.add('show');
+            } else {
+                overlay.classList.remove('show');
+            }
+        }
+
+        function mostrarStatus(mensagem, tipo = 'success') {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.textContent = mensagem;
+            indicator.className = `status-indicator show ${tipo}`;
+            
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 4000);
+        }
+
+        // Funções de Google Sheets
+        function coletarDados() {
+            return {
+                data_hora_relatorio: document.getElementById('data_hora_relatorio').value,
+                daily_commodities: document.getElementById('daily_commodities').value,
+                daily_florestal: document.getElementById('daily_florestal').value,
+                daily_fretamento: document.getElementById('daily_fretamento').value,
+                daily_integrada: document.getElementById('daily_integrada').value,
+                monthly_commodities: document.getElementById('monthly_commodities').value,
+                monthly_florestal: document.getElementById('monthly_florestal').value,
+                monthly_fretamento: document.getElementById('monthly_fretamento').value,
+                monthly_integrada: document.getElementById('monthly_integrada').value,
+                orcamento_mensal: document.getElementById('orcamento_mensal').value,
+                orcamento_pecas: document.getElementById('orcamento_pecas').value,
+                orcamento_pneus: document.getElementById('orcamento_pneus').value,
+                orcamento_servicos: document.getElementById('orcamento_servicos').value,
+                pecas_realizado: document.getElementById('pecas_realizado').value,
+                pneus_realizado: document.getElementById('pneus_realizado').value,
+                servicos_realizado: document.getElementById('servicos_realizado').value,
+                ultima_atualizacao: new Date().toISOString()
+            };
+        }
+
+        function aplicarDadosDoSheets(dados) {
+            if (!dados) return;
+            
+            document.getElementById('data_hora_relatorio').value = dados.data_hora_relatorio || '08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+            document.getElementById('daily_commodities').value = dados.daily_commodities || 0;
+            document.getElementById('daily_florestal').value = dados.daily_florestal || 0;
+            document.getElementById('daily_fretamento').value = dados.daily_fretamento || 0;
+            document.getElementById('daily_integrada').value = dados.daily_integrada || 0;
+            document.getElementById('monthly_commodities').value = dados.monthly_commodities || 0;
+            document.getElementById('monthly_florestal').value = dados.monthly_florestal || 0;
+            document.getElementById('monthly_fretamento').value = dados.monthly_fretamento || 0;
+            document.getElementById('monthly_integrada').value = dados.monthly_integrada || 0;
+            document.getElementById('orcamento_mensal').value = dados.orcamento_mensal || 0;
+            document.getElementById('orcamento_pecas').value = dados.orcamento_pecas || 0;
+            document.getElementById('orcamento_pneus').value = dados.orcamento_pneus || 0;
+            document.getElementById('orcamento_servicos').value = dados.orcamento_servicos || 0;
+            document.getElementById('pecas_realizado').value = dados.pecas_realizado || 0;
+            document.getElementById('pneus_realizado').value = dados.pneus_realizado || 0;
+            document.getElementById('servicos_realizado').value = dados.servicos_realizado || 0;
+            
+            // Atualizar data/hora no header
+            const dataHora = dados.data_hora_relatorio || '08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+            document.getElementById('dataHoraAtual').textContent = 'REALIZADO ATÉ ' + dataHora.toUpperCase();
+            
+            calcular();
+        }
+
+        async function testarConexao() {
+            const url = document.getElementById('sheetsUrl').value.trim();
+            
+            if (!url) {
+                alert('❌ Por favor, insira a URL do Google Apps Script');
+                return;
+            }
+            
+            SHEETS_URL = url;
+            localStorage.setItem('sheets_url', url);
+            
+            mostrarLoading(true);
+            
+            try {
+                const response = await fetch(url + '?action=get');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    mostrarStatus('✅ Conexão estabelecida com sucesso!', 'success');
+                    aplicarDadosDoSheets(data.data);
+                } else {
+                    throw new Error('Erro na resposta');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarStatus('❌ Erro ao conectar. Verifique a URL e as permissões.', 'error');
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function publicarDados() {
+            const url = document.getElementById('sheetsUrl').value.trim();
+            
+            if (!url) {
+                alert('❌ Configure a URL do Google Sheets primeiro!');
+                return;
+            }
+            
+            if (!confirm('🚀 Deseja publicar os dados? Todos os usuários verão as alterações.')) {
+                return;
+            }
+            
+            mostrarLoading(true);
+            
+            try {
+                const dados = coletarDados();
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ action: 'save', data: dados })
+                });
+                
+                // No-cors não permite ler resposta, então assumimos sucesso se não houver erro
+                mostrarStatus('✅ Dados publicados com sucesso!', 'success');
+                salvarValores(); // Salvar também localmente
+                toggleEditPanel();
+                
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarStatus('❌ Erro ao publicar dados. Tente novamente.', 'error');
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function carregarDadosDoSheets() {
+            const urlSalva = localStorage.getItem('sheets_url');
+            
+            if (urlSalva) {
+                document.getElementById('sheetsUrl').value = urlSalva;
+                SHEETS_URL = urlSalva;
+                
+                mostrarLoading(true);
+                
+                try {
+                    const response = await fetch(urlSalva + '?action=get');
+                    const data = await response.json();
+                    
+                    if (data.status === 'success' && data.data) {
+                        aplicarDadosDoSheets(data.data);
+                        mostrarLoading(false);
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar do Sheets:', error);
+                } finally {
+                    mostrarLoading(false);
+                }
+            }
+            
+            return false;
+        }
+
+        // Auto-refresh a cada 30 segundos (SOMENTE quando não estiver editando)
+        setInterval(async () => {
+            const painelAberto = document.getElementById('editPanel').style.display === 'block';
+            
+            // Só atualiza se o painel de edição estiver fechado
+            if (SHEETS_URL && !painelAberto) {
+                try {
+                    const response = await fetch(SHEETS_URL + '?action=get');
+                    const data = await response.json();
+                    if (data.status === 'success' && data.data) {
+                        aplicarDadosDoSheets(data.data);
+                    }
+                } catch (error) {
+                    console.log('Auto-refresh: aguardando próxima tentativa');
+                }
+            }
+        }, 30000); // 30 segundos
+
+        function zoomIn() {
+            if (zoomLevel < 1.5) {
+                zoomLevel += 0.1;
+                aplicarZoom();
+            }
+        }
+
+        function zoomOut() {
+            if (zoomLevel > 0.5) {
+                zoomLevel -= 0.1;
+                aplicarZoom();
+            }
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            aplicarZoom();
+        }
+
+        function aplicarZoom() {
+            document.getElementById('mainContainer').style.transform = `scale(${zoomLevel})`;
+            document.getElementById('mainContainer').style.transformOrigin = 'top center';
+            document.getElementById('zoomLevel').textContent = Math.round(zoomLevel * 100) + '%';
+            localStorage.setItem('zoomLevel', zoomLevel);
+        }
+
+        function carregarZoom() {
+            const savedZoom = localStorage.getItem('zoomLevel');
+            if (savedZoom) {
+                zoomLevel = parseFloat(savedZoom);
+                aplicarZoom();
+            }
+        }
+
+        function formatarMoeda(valor) {
+            return 'R$ ' + Number(valor).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+
+        function getCardClass(saldo) {
+            // Se o saldo for negativo (estourou orçamento), card fica vermelho
+            if (saldo < 0) {
+                return 'category-card red-gradient';
+            }
+            // Caso contrário, card fica cinza
+            return 'category-card gray-gradient';
+        }
+
+        function calcular() {
+            const daily_commodities = parseFloat(document.getElementById('daily_commodities').value) || 0;
+            const daily_florestal = parseFloat(document.getElementById('daily_florestal').value) || 0;
+            const daily_fretamento = parseFloat(document.getElementById('daily_fretamento').value) || 0;
+            const daily_integrada = parseFloat(document.getElementById('daily_integrada').value) || 0;
+
+            const monthly_commodities = parseFloat(document.getElementById('monthly_commodities').value) || 0;
+            const monthly_florestal = parseFloat(document.getElementById('monthly_florestal').value) || 0;
+            const monthly_fretamento = parseFloat(document.getElementById('monthly_fretamento').value) || 0;
+            const monthly_integrada = parseFloat(document.getElementById('monthly_integrada').value) || 0;
+
+            const orcamento_mensal = parseFloat(document.getElementById('orcamento_mensal').value) || 0;
+            const orcamento_pecas = parseFloat(document.getElementById('orcamento_pecas').value) || 0;
+            const orcamento_pneus = parseFloat(document.getElementById('orcamento_pneus').value) || 0;
+            const orcamento_servicos = parseFloat(document.getElementById('orcamento_servicos').value) || 0;
+
+            const pecas_realizado = parseFloat(document.getElementById('pecas_realizado').value) || 0;
+            const pneus_realizado = parseFloat(document.getElementById('pneus_realizado').value) || 0;
+            const servicos_realizado = parseFloat(document.getElementById('servicos_realizado').value) || 0;
+
+            const daily_total = daily_commodities + daily_florestal + daily_fretamento + daily_integrada;
+            const monthly_total = monthly_commodities + monthly_florestal + monthly_fretamento + monthly_integrada;
+            const total_realizado = monthly_total;
+            const saldo = orcamento_mensal - total_realizado;
+            const saldo_percentual = (saldo / orcamento_mensal) * 100;
+            const realizado_percentual = (total_realizado / orcamento_mensal) * 100;
+
+            // Percentuais da tabela mensal em relação ao orçamento mensal
+            const monthly_commodities_perc = (monthly_commodities / orcamento_mensal) * 100;
+            const monthly_florestal_perc = (monthly_florestal / orcamento_mensal) * 100;
+            const monthly_fretamento_perc = (monthly_fretamento / orcamento_mensal) * 100;
+            const monthly_integrada_perc = (monthly_integrada / orcamento_mensal) * 100;
+            const monthly_total_perc = (monthly_total / orcamento_mensal) * 100;
+
+            const saldo_pecas = orcamento_pecas - pecas_realizado;
+            const saldo_pneus = orcamento_pneus - pneus_realizado;
+            const saldo_servicos = orcamento_servicos - servicos_realizado;
+
+            const saldo_pecas_perc = (saldo_pecas / orcamento_pecas) * 100;
+            const saldo_pneus_perc = (saldo_pneus / orcamento_pneus) * 100;
+            const saldo_servicos_perc = (saldo_servicos / orcamento_servicos) * 100;
+
+            const realizado_pecas_perc = (pecas_realizado / orcamento_pecas) * 100;
+            const realizado_pneus_perc = (pneus_realizado / orcamento_pneus) * 100;
+            const realizado_servicos_perc = (servicos_realizado / orcamento_servicos) * 100;
+
+            // Percentual de cada categoria em relação ao orçamento mensal total
+            const pecas_orcamento_mensal_perc = (pecas_realizado / orcamento_mensal) * 100;
+            const pneus_orcamento_mensal_perc = (pneus_realizado / orcamento_mensal) * 100;
+            const servicos_orcamento_mensal_perc = (servicos_realizado / orcamento_mensal) * 100;
+
+            // Percentual de cada categoria em relação ao total realizado
+            const pecas_total_realizado_perc = (pecas_realizado / total_realizado) * 100;
+            const pneus_total_realizado_perc = (pneus_realizado / total_realizado) * 100;
+            const servicos_total_realizado_perc = (servicos_realizado / total_realizado) * 100;
+
+            document.getElementById('daily_commodities_display').textContent = formatarMoeda(daily_commodities);
+            document.getElementById('daily_florestal_display').textContent = formatarMoeda(daily_florestal);
+            document.getElementById('daily_fretamento_display').textContent = formatarMoeda(daily_fretamento);
+            document.getElementById('daily_integrada_display').textContent = formatarMoeda(daily_integrada);
+            document.getElementById('daily_total_display').textContent = formatarMoeda(daily_total);
+
+            document.getElementById('monthly_commodities_display').textContent = formatarMoeda(monthly_commodities);
+            document.getElementById('monthly_florestal_display').textContent = formatarMoeda(monthly_florestal);
+            document.getElementById('monthly_fretamento_display').textContent = formatarMoeda(monthly_fretamento);
+            document.getElementById('monthly_integrada_display').textContent = formatarMoeda(monthly_integrada);
+            document.getElementById('monthly_total_display').textContent = formatarMoeda(monthly_total);
+
+            // Percentuais da tabela mensal
+            document.getElementById('monthly_commodities_perc').textContent = monthly_commodities_perc.toFixed(1) + '%';
+            document.getElementById('monthly_florestal_perc').textContent = monthly_florestal_perc.toFixed(1) + '%';
+            document.getElementById('monthly_fretamento_perc').textContent = monthly_fretamento_perc.toFixed(1) + '%';
+            document.getElementById('monthly_integrada_perc').textContent = monthly_integrada_perc.toFixed(1) + '%';
+            document.getElementById('monthly_total_perc').textContent = monthly_total_perc.toFixed(1) + '%';
+
+            document.getElementById('orcamento_mensal_display').textContent = formatarMoeda(orcamento_mensal);
+            document.getElementById('total_realizado_display').textContent = formatarMoeda(total_realizado);
+            document.getElementById('percentual_realizado').textContent = realizado_percentual.toFixed(1) + '% DO ORÇAMENTO';
+            document.getElementById('saldo_display').textContent = formatarMoeda(saldo);
+            document.getElementById('saldo_percentual').textContent = saldo_percentual.toFixed(1) + '% DO ORÇAMENTO';
+
+            const saldoCard = document.getElementById('saldo_card');
+            saldoCard.className = saldo >= 0 ? 'summary-card green' : 'summary-card red';
+
+            document.getElementById('orcamento_pecas_display').textContent = formatarMoeda(orcamento_pecas);
+            document.getElementById('orcamento_pneus_display').textContent = formatarMoeda(orcamento_pneus);
+            document.getElementById('orcamento_servicos_display').textContent = formatarMoeda(orcamento_servicos);
+
+            document.getElementById('pecas_realizado_display').textContent = formatarMoeda(pecas_realizado);
+            document.getElementById('pneus_realizado_display').textContent = formatarMoeda(pneus_realizado);
+            document.getElementById('servicos_realizado_display').textContent = formatarMoeda(servicos_realizado);
+
+            document.getElementById('saldo_pecas_display').textContent = formatarMoeda(saldo_pecas);
+            document.getElementById('saldo_pneus_display').textContent = formatarMoeda(saldo_pneus);
+            document.getElementById('saldo_servicos_display').textContent = formatarMoeda(saldo_servicos);
+
+            // Percentuais em relação ao orçamento mensal total
+            document.getElementById('pecas_budget_percent').textContent = pecas_orcamento_mensal_perc.toFixed(1) + '% do Orçamento Mensal';
+            document.getElementById('pneus_budget_percent').textContent = pneus_orcamento_mensal_perc.toFixed(1) + '% do Orçamento Mensal';
+            document.getElementById('servicos_budget_percent').textContent = servicos_orcamento_mensal_perc.toFixed(1) + '% do Orçamento Mensal';
+
+            // Percentuais em relação ao total realizado
+            document.getElementById('pecas_realized_percent').textContent = pecas_total_realizado_perc.toFixed(1) + '% do Total Realizado';
+            document.getElementById('pneus_realized_percent').textContent = pneus_total_realizado_perc.toFixed(1) + '% do Total Realizado';
+            document.getElementById('servicos_realized_percent').textContent = servicos_total_realizado_perc.toFixed(1) + '% do Total Realizado';
+
+            document.getElementById('saldo_pecas_percentual').textContent = 'Saldo: ' + saldo_pecas_perc.toFixed(1) + '%';
+            document.getElementById('saldo_pneus_percentual').textContent = 'Saldo: ' + saldo_pneus_perc.toFixed(1) + '%';
+            document.getElementById('saldo_servicos_percentual').textContent = 'Saldo: ' + saldo_servicos_perc.toFixed(1) + '%';
+
+            document.getElementById('realizado_pecas_percentual').textContent = 'Realizado: ' + realizado_pecas_perc.toFixed(1) + '%';
+            document.getElementById('realizado_pneus_percentual').textContent = 'Realizado: ' + realizado_pneus_perc.toFixed(1) + '%';
+            document.getElementById('realizado_servicos_percentual').textContent = 'Realizado: ' + realizado_servicos_perc.toFixed(1) + '%';
+
+            const cardPecas = document.getElementById('saldo_pecas_card');
+            const cardPneus = document.getElementById('saldo_pneus_card');
+            const cardServicos = document.getElementById('saldo_servicos_card');
+
+            // Cards ficam cinza ou vermelhos baseado no saldo
+            cardPecas.className = getCardClass(saldo_pecas);
+            cardPneus.className = getCardClass(saldo_pneus);
+            cardServicos.className = getCardClass(saldo_servicos);
+        }
+
+        // Detectar se está em modo visualização (através da URL)
+        function verificarModoVisualizacao() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modoVisualizacao = urlParams.get('view') === 'only';
+            
+            if (modoVisualizacao) {
+                // Ocultar botões de edição em modo visualização
+                document.querySelector('.edit-btn').style.display = 'none';
+                document.querySelector('.capture-btn').style.display = 'none';
+                document.querySelector('.test-blink-btn').style.display = 'none';
+                document.querySelector('.share-btn').style.display = 'none';
+                
+                // Mostrar indicador de modo visualização
+                const indicator = document.createElement('div');
+                indicator.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 50px;
+                    font-size: 12px;
+                    font-weight: 700;
+                    z-index: 1000;
+                    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+                `;
+                indicator.textContent = '👁️ MODO VISUALIZAÇÃO';
+                document.body.appendChild(indicator);
+            }
+            
+            return modoVisualizacao;
+        }
+
+        // Abrir modal de compartilhar
+        function abrirModalCompartilhar() {
+            const sheetsUrl = localStorage.getItem('sheets_url');
+            
+            if (!sheetsUrl) {
+                alert('⚠️ Configure o Google Sheets primeiro para gerar o link de compartilhamento!');
+                return;
+            }
+            
+            // Gerar link de visualização
+            const baseUrl = window.location.href.split('?')[0];
+            const linkVisualizacao = baseUrl + '?view=only';
+            
+            const modal = document.getElementById('shareModal');
+            const linkBox = document.getElementById('shareLinkBox');
+            linkBox.textContent = linkVisualizacao;
+            
+            modal.classList.add('show');
+        }
+
+        // Fechar modal de compartilhar
+        function fecharModalCompartilhar() {
+            const modal = document.getElementById('shareModal');
+            modal.classList.remove('show');
+        }
+
+        // Copiar link
+        function copiarLink() {
+            const linkBox = document.getElementById('shareLinkBox');
+            const link = linkBox.textContent;
+            
+            // Copiar para clipboard
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(link).then(() => {
+                    mostrarStatus('✅ Link copiado para área de transferência!', 'success');
+                }).catch(() => {
+                    copiarLinkFallback(link);
+                });
+            } else {
+                copiarLinkFallback(link);
+            }
+        }
+
+        // Fallback para copiar (dispositivos mais antigos)
+        function copiarLinkFallback(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                mostrarStatus('✅ Link copiado para área de transferência!', 'success');
+            } catch (err) {
+                alert('Link: ' + text + '\n\nCopie manualmente.');
+            }
+            
+            document.body.removeChild(textarea);
+        }
+
+        // Fechar modal ao clicar fora
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('shareModal');
+            if (event.target === modal) {
+                fecharModalCompartilhar();
+            }
+        });
+
+        function verificarEPiscarCardsVermelhos() {
+            const cards = [
+                { id: 'saldo_pecas_card', nome: 'Peças' },
+                { id: 'saldo_pneus_card', nome: 'Pneus' },
+                { id: 'saldo_servicos_card', nome: 'Serviços' }
+            ];
+
+            cards.forEach(card => {
+                const cardElement = document.getElementById(card.id);
+                
+                // Verificar se o card está vermelho (estourou orçamento)
+                if (cardElement && cardElement.classList.contains('red-gradient')) {
+                    // Adicionar classe de animação
+                    cardElement.classList.add('alert-blink');
+                    
+                    // Remover a classe após a animação (3 segundos)
+                    setTimeout(() => {
+                        cardElement.classList.remove('alert-blink');
+                    }, 3000);
+                }
+            });
+        }
+
+        // Iniciar o timer de 10 minutos (600000 ms)
+        function iniciarAlertasPeriodicos() {
+            // Executar imediatamente após 10 segundos (para teste/demonstração)
+            // setTimeout(verificarEPiscarCardsVermelhos, 10000);
+            
+            // Executar a cada 10 minutos
+            setInterval(verificarEPiscarCardsVermelhos, 600000); // 600000 ms = 10 minutos
+        }
+
+        function capturarRelatorio() {
+            // Ocultar botões de controle temporariamente
+            const captureBtn = document.querySelector('.capture-btn');
+            const editBtn = document.querySelector('.edit-btn');
+            const zoomControls = document.querySelector('.zoom-controls');
+            
+            captureBtn.style.display = 'none';
+            editBtn.style.display = 'none';
+            zoomControls.style.display = 'none';
+            
+            // Adicionar efeito de flash
+            const container = document.getElementById('mainContainer');
+            container.classList.add('capturing');
+            
+            // Aguardar um momento para garantir que os botões foram ocultados
+            setTimeout(() => {
+                // Configurações para captura em alta qualidade
+                html2canvas(container, {
+                    scale: 3, // 3x a resolução para qualidade máxima (equivalente a 300 DPI)
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    windowWidth: container.scrollWidth,
+                    windowHeight: container.scrollHeight,
+                    imageTimeout: 0,
+                    removeContainer: true
+                }).then(canvas => {
+                    // Converter para JPG com qualidade máxima (0.98 = 98% de qualidade)
+                    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                    
+                    // Criar link de download
+                    const link = document.createElement('a');
+                    const dataHora = new Date();
+                    const nomeArquivo = `Relatorio_Performance_${dataHora.getFullYear()}-${String(dataHora.getMonth() + 1).padStart(2, '0')}-${String(dataHora.getDate()).padStart(2, '0')}_${String(dataHora.getHours()).padStart(2, '0')}h${String(dataHora.getMinutes()).padStart(2, '0')}.jpg`;
+                    
+                    link.download = nomeArquivo;
+                    link.href = imgData;
+                    link.click();
+                    
+                    // Remover efeito de flash
+                    container.classList.remove('capturing');
+                    
+                    // Restaurar botões
+                    captureBtn.style.display = 'block';
+                    editBtn.style.display = 'block';
+                    zoomControls.style.display = 'flex';
+                    
+                    // Feedback ao usuário
+                    alert('📸 Captura realizada com sucesso!\n\nArquivo: ' + nomeArquivo + '\n\nResolução: Alta Qualidade (3x)');
+                }).catch(error => {
+                    console.error('Erro ao capturar:', error);
+                    
+                    // Remover efeito de flash em caso de erro
+                    container.classList.remove('capturing');
+                    
+                    // Restaurar botões
+                    captureBtn.style.display = 'block';
+                    editBtn.style.display = 'block';
+                    zoomControls.style.display = 'flex';
+                    
+                    alert('❌ Erro ao capturar a imagem. Por favor, tente novamente.');
+                });
+            }, 100);
+        }
+
+        function toggleEditPanel() {
+            const panel = document.getElementById('editPanel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function salvarValores() {
+            const dados = {
+                data_hora_relatorio: document.getElementById('data_hora_relatorio').value,
+                daily_commodities: document.getElementById('daily_commodities').value,
+                daily_florestal: document.getElementById('daily_florestal').value,
+                daily_fretamento: document.getElementById('daily_fretamento').value,
+                daily_integrada: document.getElementById('daily_integrada').value,
+                monthly_commodities: document.getElementById('monthly_commodities').value,
+                monthly_florestal: document.getElementById('monthly_florestal').value,
+                monthly_fretamento: document.getElementById('monthly_fretamento').value,
+                monthly_integrada: document.getElementById('monthly_integrada').value,
+                orcamento_mensal: document.getElementById('orcamento_mensal').value,
+                orcamento_pecas: document.getElementById('orcamento_pecas').value,
+                orcamento_pneus: document.getElementById('orcamento_pneus').value,
+                orcamento_servicos: document.getElementById('orcamento_servicos').value,
+                pecas_realizado: document.getElementById('pecas_realizado').value,
+                pneus_realizado: document.getElementById('pneus_realizado').value,
+                servicos_realizado: document.getElementById('servicos_realizado').value,
+                ultima_atualizacao: new Date().toISOString()
+            };
+            
+            localStorage.setItem('relatorio_logistica', JSON.stringify(dados));
+            
+            // Atualizar a data/hora no header
+            const dataHora = document.getElementById('data_hora_relatorio').value;
+            if (dataHora) {
+                document.getElementById('dataHoraAtual').textContent = 'REALIZADO ATÉ ' + dataHora.toUpperCase();
+            }
+            
+            return dados;
+        }
+
+        // Função para copiar link ao clicar
+        function copiarLinkClicavel(elementId) {
+            const linkElement = document.getElementById(elementId);
+            const linkText = linkElement.href;
+            
+            navigator.clipboard.writeText(linkText).then(() => {
+                // Feedback visual
+                const originalText = linkElement.textContent;
+                linkElement.textContent = '✅ Link copiado!';
+                linkElement.style.background = '#c8e6c9';
+                
+                setTimeout(() => {
+                    linkElement.textContent = originalText;
+                    linkElement.style.background = '#e3f2fd';
+                }, 2000);
+            }).catch(err => {
+                alert('Link: ' + linkText);
+            });
+        }
+
+        // Tornar links editáveis com duplo clique
+        function tornarLinkEditavel(elementId) {
+            const linkElement = document.getElementById(elementId);
+            
+            linkElement.addEventListener('dblclick', function(e) {
+                e.preventDefault();
+                const novoLink = prompt('Digite o novo link:', this.href);
+                if (novoLink && novoLink.trim() !== '') {
+                    this.href = novoLink.trim();
+                    this.textContent = novoLink.trim();
+                    salvarLinksNoLocalStorage();
+                    alert('✅ Link atualizado com sucesso!');
+                }
+            });
+            
+            // Copiar com clique simples
+            linkElement.addEventListener('click', function(e) {
+                if (!e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    copiarLinkClicavel(elementId);
+                }
+            });
+        }
+
+        // Salvar links no localStorage
+        function salvarLinksNoLocalStorage() {
+            const links = {
+                linkRelatorio: document.getElementById('linkRelatorio').href,
+                linkSheets: document.getElementById('linkSheets').href,
+                linkAppsScript: document.getElementById('linkAppsScript').href
+            };
+            localStorage.setItem('relatorio_links', JSON.stringify(links));
+        }
+
+        // Carregar links do localStorage
+        function carregarLinksDoLocalStorage() {
+            const linksSalvos = localStorage.getItem('relatorio_links');
+            if (linksSalvos) {
+                const links = JSON.parse(linksSalvos);
+                
+                if (links.linkRelatorio) {
+                    document.getElementById('linkRelatorio').href = links.linkRelatorio;
+                    document.getElementById('linkRelatorio').textContent = links.linkRelatorio;
+                }
+                if (links.linkSheets) {
+                    document.getElementById('linkSheets').href = links.linkSheets;
+                    document.getElementById('linkSheets').textContent = links.linkSheets;
+                }
+                if (links.linkAppsScript) {
+                    document.getElementById('linkAppsScript').href = links.linkAppsScript;
+                    document.getElementById('linkAppsScript').textContent = links.linkAppsScript;
+                }
+            }
+        }
+
+        // Inicializar links clicáveis ao carregar a página
+        window.addEventListener('DOMContentLoaded', function() {
+            carregarLinksDoLocalStorage();
+            tornarLinkEditavel('linkRelatorio');
+            tornarLinkEditavel('linkSheets');
+            tornarLinkEditavel('linkAppsScript');
+        });
+
+        async function carregarValores() {
+            // Tentar carregar do Google Sheets primeiro
+            const carregouDoSheets = await carregarDadosDoSheets();
+            
+            if (!carregouDoSheets) {
+                // Fallback para localStorage
+                const dados = localStorage.getItem('relatorio_logistica');
+                if (dados) {
+                    const valores = JSON.parse(dados);
+                    document.getElementById('data_hora_relatorio').value = valores.data_hora_relatorio || '08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+                    document.getElementById('daily_commodities').value = valores.daily_commodities || 115443.20;
+                    document.getElementById('daily_florestal').value = valores.daily_florestal || 0;
+                    document.getElementById('daily_fretamento').value = valores.daily_fretamento || 2381.43;
+                    document.getElementById('daily_integrada').value = valores.daily_integrada || 84424.16;
+                    document.getElementById('monthly_commodities').value = valores.monthly_commodities || 17143197.00;
+                    document.getElementById('monthly_florestal').value = valores.monthly_florestal || 0;
+                    document.getElementById('monthly_fretamento').value = valores.monthly_fretamento || 193537.00;
+                    document.getElementById('monthly_integrada').value = valores.monthly_integrada || 6361217.00;
+                    document.getElementById('orcamento_mensal').value = valores.orcamento_mensal || 32553959;
+                    document.getElementById('orcamento_pecas').value = valores.orcamento_pecas || 15353983;
+                    document.getElementById('orcamento_pneus').value = valores.orcamento_pneus || 9202912;
+                    document.getElementById('orcamento_servicos').value = valores.orcamento_servicos || 7647125;
+                    document.getElementById('pecas_realizado').value = valores.pecas_realizado || 12909437;
+                    document.getElementById('pneus_realizado').value = valores.pneus_realizado || 6489282;
+                    document.getElementById('servicos_realizado').value = valores.servicos_realizado || 5832233;
+                    
+                    // Atualizar data/hora no header
+                    const dataHora = valores.data_hora_relatorio || '08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+                    document.getElementById('dataHoraAtual').textContent = 'REALIZADO ATÉ ' + dataHora.toUpperCase();
+                } else {
+                    document.getElementById('data_hora_relatorio').value = '08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+                    document.getElementById('daily_commodities').value = 115443.20;
+                    document.getElementById('daily_florestal').value = 0;
+                    document.getElementById('daily_fretamento').value = 2381.43;
+                    document.getElementById('daily_integrada').value = 84424.16;
+                    document.getElementById('monthly_commodities').value = 17143197.00;
+                    document.getElementById('monthly_florestal').value = 0;
+                    document.getElementById('monthly_fretamento').value = 193537.00;
+                    document.getElementById('monthly_integrada').value = 6361217.00;
+                    document.getElementById('orcamento_mensal').value = 32553959;
+                    document.getElementById('orcamento_pecas').value = 15353983;
+                    document.getElementById('orcamento_pneus').value = 9202912;
+                    document.getElementById('orcamento_servicos').value = 7647125;
+                    document.getElementById('pecas_realizado').value = 12909437;
+                    document.getElementById('pneus_realizado').value = 6489282;
+                    document.getElementById('servicos_realizado').value = 5832233;
+                    
+                    // Atualizar data/hora no header
+                    document.getElementById('dataHoraAtual').textContent = 'REALIZADO ATÉ 08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+                }
+                
+                calcular();
+            }
+        }
+
+        function salvarEFechar() {
+            salvarValores();
+            calcular();
+            toggleEditPanel();
+            alert('✅ Dados salvos com sucesso!');
+        }
+
+        function resetar() {
+            if (confirm('Deseja resetar todos os valores para o padrão?')) {
+                document.getElementById('data_hora_relatorio').value = '08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+                document.getElementById('daily_commodities').value = 115443.20;
+                document.getElementById('daily_florestal').value = 0;
+                document.getElementById('daily_fretamento').value = 2381.43;
+                document.getElementById('daily_integrada').value = 84424.16;
+                document.getElementById('monthly_commodities').value = 17143197.00;
+                document.getElementById('monthly_florestal').value = 0;
+                document.getElementById('monthly_fretamento').value = 193537.00;
+                document.getElementById('monthly_integrada').value = 6361217.00;
+                document.getElementById('orcamento_mensal').value = 32553959;
+                document.getElementById('orcamento_pecas').value = 15353983;
+                document.getElementById('orcamento_pneus').value = 9202912;
+                document.getElementById('orcamento_servicos').value = 7647125;
+                document.getElementById('pecas_realizado').value = 12909437;
+                document.getElementById('pneus_realizado').value = 6489282;
+                document.getElementById('servicos_realizado').value = 5832233;
+                document.getElementById('dataHoraAtual').textContent = 'REALIZADO ATÉ 08:45 - SEXTA-FEIRA, 30 DE JANEIRO DE 2026';
+                calcular();
+                salvarValores();
+                alert('✅ Valores resetados para o padrão e salvos!');
+            }
+        }
+
+        function limparDados() {
+            if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados salvos? Esta ação não pode ser desfeita!')) {
+                localStorage.removeItem('relatorio_logistica');
+                alert('🗑️ Dados salvos foram apagados! A página será recarregada.');
+                location.reload();
+            }
+        }
+
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', calcular);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === '+' || e.key === '=') {
+                    e.preventDefault();
+                    zoomIn();
+                } else if (e.key === '-') {
+                    e.preventDefault();
+                    zoomOut();
+                } else if (e.key === '0') {
+                    e.preventDefault();
+                    resetZoom();
+                }
+            }
+        });
+
+        carregarZoom();
+        carregarValores();
+        calcular();
+        iniciarAlertasPeriodicos(); // Iniciar alertas de 10 em 10 minutos
+        verificarModoVisualizacao(); // Verificar se está em modo visualização
+    </script>
+</body>
+</html>
